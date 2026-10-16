@@ -147,6 +147,7 @@ def main():
     else:
         requirements = extract_job_requirements(JOB_DESCRIPTION)
         job_id = create_job(JOB_TITLE, JOB_DESCRIPTION, requirements)
+<<<<<<< HEAD
 
     job = get_job(job_id)
 
@@ -160,6 +161,12 @@ def main():
         update_must_have(job_id, must_have)
         job = get_job(job_id)
 
+=======
+        must_have = [r["text"] for r in requirements if r["category"] == "skills"]
+        update_must_have(job_id, must_have)
+
+    job = get_job(job_id)
+>>>>>>> b80955575c0e20b4cc4dd4d56bb99cf4b5cea03e
     print(f"Job: {job['title']}")
     print(f"Must-Have: {', '.join(job['must_have'])}")
     print("-" * 50)
