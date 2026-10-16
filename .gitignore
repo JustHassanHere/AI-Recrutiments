@@ -15,3 +15,4 @@ downloads/
 # Python cache
 __pycache__/
 *.pyc
+*.db

@@ -4,4 +4,11 @@ google-auth-oauthlib
 pypdf
 python-docx
 python-dotenv
-openai
+google-genai
+pandas
+fastapi
+uvicorn
+pydantic
+streamlit
+requests
+httpx
