@@ -1,27 +1,44 @@
-from pathlib import Path
+import os
+from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
-BASE_DIR = Path(__file__).resolve().parent
-CREDENTIALS_FILE = BASE_DIR / 'credentials.json'
-TOKEN_FILE = BASE_DIR / 'token.json'
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+TOKEN_FILE = "token.json"
+CREDENTIALS_FILE = "credentials.json"
+
+
+def save_token(credentials):
+    with open(TOKEN_FILE, "w") as token:
+        token.write(credentials.to_json())
+
+
+def login():
+    flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
+    credentials = flow.run_local_server(port=0)
+    save_token(credentials)
+    return credentials
+
 
 def get_credentials():
-    if not CREDENTIALS_FILE.exists():
-        raise FileNotFoundError(f"Credentials file not found at {CREDENTIALS_FILE}")
     credentials = None
-    if TOKEN_FILE.exists():
+
+    if os.path.exists(TOKEN_FILE):
         credentials = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+
+    # token is still valid
     if credentials and credentials.valid:
         return credentials
-    if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file(str(CREDENTIALS_FILE), SCOPES)
-        credentials = flow.run_local_server(port=0)
 
-    TOKEN_FILE.write_text(credentials.to_json(), encoding='utf-8')
-    return credentials
-            
+    # token expired: try to refresh it
+    if credentials and credentials.expired and credentials.refresh_token:
+        try:
+            credentials.refresh(Request())
+            save_token(credentials)
+            return credentials
+        except RefreshError:
+            print("Token expired or revoked. Please log in again.")
+
+    # no token, or refresh failed: log in again
+    return login()
